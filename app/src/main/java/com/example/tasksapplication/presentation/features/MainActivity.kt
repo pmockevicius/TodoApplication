@@ -20,7 +20,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dataBase: TaskDataBase
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var taskAdapter: TaskAdapter
 
@@ -30,7 +29,6 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
         setContentView(binding.root)
 
-        initDependencies()
         initObservers()
         initListeners()
         initView()
@@ -41,9 +39,6 @@ class MainActivity : AppCompatActivity() {
         setUpTaskAdapter()
     }
 
-    private fun initDependencies() {
-        dataBase = (application as TaskApplication).database
-    }
 
     private fun initObservers() {
         viewModel.task.observe(this) {
@@ -66,9 +61,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun updateTask(title: String, description: String, task: Task) {
-            task.title = title
-            task.description = description
-            viewModel.updateTask(task)
+            viewModel.updateTask(title, description, task)
         }
     }
 
@@ -76,7 +69,6 @@ class MainActivity : AppCompatActivity() {
         binding.floatingAdd.setOnClickListener(){
             val defaultTask = Task(title = "Add task title", description = "Add task Description", isImportant = false)
             viewModel.insertTask(defaultTask)
-//            taskAdapter.addTask(defaultTask)
         }
     }
 

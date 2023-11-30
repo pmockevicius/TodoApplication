@@ -9,13 +9,4 @@ import dagger.hilt.android.HiltAndroidApp
 class TaskApplication : Application() {
     val database: TaskDataBase by lazy { TaskDataBase.getDatabase(applicationContext) }
 
-    companion object {
-        lateinit var instance: TaskApplication
-        private set
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        instance = this
-    }
 }

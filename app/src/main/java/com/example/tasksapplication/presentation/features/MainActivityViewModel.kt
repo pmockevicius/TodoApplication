@@ -30,11 +30,12 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
         }
     }
 
-    override fun updateTask(task: Task) {
+    override fun updateTask(title: String, description: String, task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
-            usecase.updateTask(task)
+            usecase.updateTask(title, description, task)
         }
     }
+
 
     override fun insertTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {

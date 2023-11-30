@@ -18,9 +18,12 @@ class TaskUsecaseImpl @Inject constructor (private val repository: TaskRepositor
         repository.deleteTask(task)
     }
 
-    override suspend fun updateTask(task: Task) {
+    override suspend fun updateTask(title: String, description: String, task: Task) {
+        task.title = title
+        task.description = description
         repository.updateTask(task)
     }
+
 
     override suspend fun getTaskById(id: Long): Task{
         return repository.getTaskById(id)
