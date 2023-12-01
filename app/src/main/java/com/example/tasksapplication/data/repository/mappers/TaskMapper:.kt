@@ -6,8 +6,9 @@ import com.example.tasksapplication.domain.entity.Task
 fun TaskDbo.toEntity(): Task =
     Task(
         id = this.id,
-        title = this.title,
-        description = this.description,
+        body = this.body,
+        isCompleted = this.isCompleted,
+        timeAdded = this.timeAdded,
         isImportant = this.isImportant
     )
 
@@ -15,8 +16,8 @@ fun TaskDbo.toEntity(): Task =
 fun Task.toDbo(): TaskDbo =
     TaskDbo(
         id = this.id,
-        title = this.title,
-        description= this.description,
+        body = this.body,
+        isCompleted = this.isCompleted,
         timeAdded = System.currentTimeMillis(),
         isImportant = this.isImportant
     )

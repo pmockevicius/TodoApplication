@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Tasks Application</string>
+    <string name="no_tasks_message">Press + at the bottom to add tasks</string>
 </resources>

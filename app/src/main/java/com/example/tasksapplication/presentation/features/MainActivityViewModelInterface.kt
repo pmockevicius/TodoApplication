@@ -9,6 +9,7 @@ interface MainActivityViewModelInterface {
     fun getTasks()
     fun deleteTask(task: Task)
 
-    fun updateTask(title: String, description: String, task: Task)
+    fun updateTask(title: String, task: Task)
     fun insertTask(task: Task)
+    fun toogleCompletedTaskVisibility(displayCompletedTasks: Boolean)
 }

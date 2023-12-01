@@ -1,5 +1,7 @@
 package com.example.tasksapplication.presentation.features
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,7 +21,7 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
     override val task: LiveData<List<Task>> = _task
     override fun getTasks() {
         viewModelScope.launch(Dispatchers.IO) {
-            val tasks = usecase.getTasks()
+            val tasks = usecase.getTasks().filter { task -> !task.isCompleted }
             _task.postValue(tasks)
         }
     }
@@ -30,9 +32,9 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
         }
     }
 
-    override fun updateTask(title: String, description: String, task: Task) {
+    override fun updateTask(title: String, task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
-            usecase.updateTask(title, description, task)
+            usecase.updateTask(title, task)
         }
     }
 
@@ -42,6 +44,18 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
             usecase.insertTask(task)
             val updatedTasks = usecase.getTasks()
             _task.postValue(updatedTasks)
+        }
+    }
+
+    override fun toogleCompletedTaskVisibility(displayCompletedTasks: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val tasks = usecase.getTasks()
+            val filteredTasks = if (displayCompletedTasks) {
+                tasks
+            } else {
+                tasks.filter { !it.isCompleted }
+            }
+            _task.postValue(filteredTasks)
         }
     }
 
