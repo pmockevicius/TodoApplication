@@ -7,5 +7,5 @@ interface TaskCallbackInterface {
 
     fun deleteTask(task: Task)
     fun updateTask(title: String, task: Task)
-    fun toogleCompletedStatus(isChecked: Boolean, task: Task)
+    fun toggleCompletedStatus(isChecked: Boolean, task: Task)
 }

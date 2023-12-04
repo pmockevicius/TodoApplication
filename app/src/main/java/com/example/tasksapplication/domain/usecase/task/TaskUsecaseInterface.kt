@@ -7,5 +7,4 @@ interface TaskUsecaseInterface {
     suspend fun deleteTask(task: Task)
     suspend fun updateTask(body: String,  task: Task)
     suspend fun insertTask(task: Task): Long
-    suspend fun getTaskById(id: Long): Task
 }

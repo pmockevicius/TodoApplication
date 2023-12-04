@@ -1,5 +1,7 @@
 package com.example.tasksapplication.data.repository.task
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import com.example.tasksapplication.data.datasource.task.local.RoomDb.TaskLocalDatasourceInterface
 import com.example.tasksapplication.data.repository.mappers.toDbo
 import com.example.tasksapplication.data.repository.mappers.toEntity
@@ -24,10 +26,8 @@ class TaskRepositoryImpl @Inject constructor(private val localDS: TaskLocalDatas
 
 
     override suspend fun updateTask(task: Task) {
+//        Log.d(TAG, "Repository: $task ")
         localDS.updateTask(task.toDbo())
     }
 
-    override suspend fun getTaskById(id: Long): Task{
-        return localDS.getTaskBy(id).toEntity()
-    }
 }

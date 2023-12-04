@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import androidx.lifecycle.Lifecycle
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rickmorty.presentation.features.details.TaskAdapter
 
@@ -15,45 +18,61 @@ import com.example.tasksapplication.domain.entity.Task
 import com.google.android.material.switchmaterial.SwitchMaterial
 
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     private lateinit var taskAdapter: TaskAdapter
-    private lateinit var completedTasksSwitch: SwitchMaterial
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java]
-        completedTasksSwitch = binding.materialSwitch
-
         setContentView(binding.root)
 
-        initObservers()
-        initListeners()
         initView()
     }
 
     private fun initView() {
-
-
         viewModel.getTasks()
+        initObservers()
         setUpTaskAdapter()
         initListeners()
     }
 
 
     private fun initObservers() {
-        viewModel.task.observe(this) {
-            taskAdapter.updateTasks(it.toMutableList())
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                viewModel.uiState.map { it.tasks }
+                    .distinctUntilChanged().collect {
+                        taskAdapter.updateTasks(it.toMutableList())
+                    }
+            }
         }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                viewModel.uiState.map { it.newTaskId }
+                    .distinctUntilChanged().collect {
+                        taskAdapter.insertTask(Task(id = it))
+                    }
+            }
+        }
+
+
     }
 
     private fun setUpTaskAdapter() {
         val recyclerView = binding.tasksRecyclerView
-        taskAdapter = TaskAdapter(mutableListOf(), TaskCallbacks())
+        taskAdapter = TaskAdapter(mutableListOf(), TaskCallbacks(), recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = taskAdapter
     }
@@ -64,46 +83,26 @@ class MainActivity : AppCompatActivity() {
             taskAdapter.removeTask(task)
         }
 
-        override fun updateTask(title: String, task: Task) {
-            viewModel.updateTask(title, task)
-        }
-
-        val handler = Handler()
-        val delayedOperationsMap = mutableMapOf<Task, Runnable>()
-
-        override fun toogleCompletedStatus(isChecked: Boolean, task: Task) {
-
-            // Remove any existing delayed operation for the same task
-            val existingRunnable = delayedOperationsMap.remove(task)
-            if (existingRunnable != null) {
-                handler.removeCallbacks(existingRunnable)
-            }
-
-            if (isChecked) {
-                // Schedule a new delayed operation to delete the task
-                val newRunnable = Runnable {
-//                    viewModel.deleteTask(task)
-                    taskAdapter.removeTask(task)
-                    task.isCompleted = true
-                    viewModel.updateTask(task.body, task)
-                }
-
-                handler.postDelayed(newRunnable, 5000L)
-
-                // Store the Runnable associated with this task
-                delayedOperationsMap[task] = newRunnable
-            }
+        override fun updateTask(taskBody: String, task: Task) {
+            viewModel.updateTask(taskBody, task)
         }
 
 
+        override fun toggleCompletedStatus(isChecked: Boolean, task: Task) {
+            val result = viewModel.toogleCompletedStatus(isChecked, task)
+            if (result) {
+                taskAdapter.removeTask(task)
+            }
+        }
     }
 
     private fun initListeners() {
         binding.floatingAdd.setOnClickListener() {
             viewModel.insertTask(Task())
+
         }
 
-      completedTasksSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+        binding.materialSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
             viewModel.toogleCompletedTaskVisibility(isChecked)
 
         }

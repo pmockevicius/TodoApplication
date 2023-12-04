@@ -1,5 +1,7 @@
 package com.example.tasksapplication.data.datasource.task.local.RoomDb
 
+import android.content.ContentValues
+import android.util.Log
 import com.sidharth.mosam.data.local.TaskDataBase
 import javax.inject.Inject
 
@@ -19,6 +21,7 @@ class TaskLocalDatasourceImpl @Inject constructor(database: TaskDataBase): TaskL
     }
 
     override suspend fun updateTask(taskDbo: TaskDbo) {
+        Log.d(ContentValues.TAG, "Database: $taskDbo ")
         taskDao.updateTask(taskDbo)
     }
 
