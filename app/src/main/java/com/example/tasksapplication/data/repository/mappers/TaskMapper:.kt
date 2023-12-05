@@ -8,16 +8,13 @@ fun TaskDbo.toEntity(): Task =
         id = this.id,
         body = this.body,
         isCompleted = this.isCompleted,
-        timeAdded = this.timeAdded,
-        isImportant = this.isImportant
+        timeAdded = this.timeAdded
     )
-
 
 fun Task.toDbo(): TaskDbo =
     TaskDbo(
         id = this.id,
         body = this.body,
         isCompleted = this.isCompleted,
-        timeAdded = System.currentTimeMillis(),
-        isImportant = this.isImportant
+        timeAdded = System.currentTimeMillis()
     )

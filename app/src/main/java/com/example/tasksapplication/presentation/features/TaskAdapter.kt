@@ -2,7 +2,6 @@ package com.example.rickmorty.presentation.features.details
 
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -58,7 +57,6 @@ class TaskAdapter(
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                Log.d("1", "onTextChanged: Called for ${task.id}")
                 if (areListenersActive) {
                     taskCallback.updateTask(s.toString(), task)
                 }
@@ -80,14 +78,23 @@ class TaskAdapter(
     }
 
     fun removeTask(task: Task) {
-        val taskPosition = tasks.indexOf(task)
-        tasks.removeAt(taskPosition)
-        notifyItemRemoved(taskPosition)
+        if (tasks.contains(task)){
+            val taskPosition = tasks.indexOf(task)
+            tasks.removeAt(taskPosition)
+            notifyItemRemoved(taskPosition)
+        }
     }
 
     fun updateTasks(taskList: MutableList<Task>) {
-        tasks = taskList
+        tasks = taskList .filter { task ->  task.body.isNotEmpty() }.toMutableList()
         notifyDataSetChanged()
+
+        recyclerView?.post {
+            val lastViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(tasks.size - 1) as TaskViewHolder?
+            lastViewHolder?.taskTitle?.clearFocus()
+        }
+
     }
 
     fun insertTask(task: Task) {
@@ -98,7 +105,6 @@ class TaskAdapter(
 
     private fun moveCursorToNewTask() {
         recyclerView?.smoothScrollToPosition(tasks.size - 1)
-
         recyclerView?.post {
             val lastViewHolder =
                 recyclerView.findViewHolderForAdapterPosition(tasks.size - 1) as TaskViewHolder?

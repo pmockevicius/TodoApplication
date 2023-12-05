@@ -5,5 +5,4 @@ data class Task(
     var body: String = "",
     var isCompleted: Boolean = false,
     val timeAdded: Long = 0,
-    var isImportant: Boolean = false
 )

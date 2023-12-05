@@ -8,12 +8,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "tasks")
 data class TaskDbo(
 
-
-
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val body: String,
     var isCompleted: Boolean,
     @ColumnInfo(name = "time_added") var timeAdded: Long,
-    @ColumnInfo(name = "is_important") var isImportant: Boolean,
 ) {
 }

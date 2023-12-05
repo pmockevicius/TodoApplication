@@ -8,5 +8,4 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class TaskApplication : Application() {
     val database: TaskDataBase by lazy { TaskDataBase.getDatabase(applicationContext) }
-
 }

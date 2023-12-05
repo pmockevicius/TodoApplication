@@ -1,7 +1,5 @@
 package com.example.tasksapplication.presentation.features
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tasksapplication.domain.entity.Task
@@ -17,9 +15,9 @@ import javax.inject.Inject
 
 data class UIState(
     val tasks: List<Task> = listOf(),
-    val newTaskId: Long = 0,
+    val newTask: Task = Task(),
+    val taskToBeRemoved: Task = Task()
 )
-
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecaseInterface) :
@@ -27,13 +25,13 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
 
     private var displayCompletedTasks: Boolean = false
 
-
     private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState())
     override val uiState: StateFlow<UIState> = _uiState.asStateFlow()
 
 
     override fun getTasks() {
         viewModelScope.launch(Dispatchers.IO) {
+            removeEmptyTasks()                                         //Where to implement this logic?
             val tasks = if (displayCompletedTasks) {
                 usecase.getTasks()
             } else {
@@ -44,6 +42,7 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
             }
         }
     }
+
 
     override fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -57,54 +56,48 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
         }
     }
 
-
-    override fun insertTask(task: Task) {
+    override fun addNewTask() {
         viewModelScope.launch(Dispatchers.IO) {
-            val insertedTaskId = usecase.insertTask(task)
-            updateUIState(newTaskId = insertedTaskId )
+            val taskToBeAddedToUI = usecase.insertToDbAndGenerateTaskForUI()
+            updateUIState(newTask = taskToBeAddedToUI)
         }
     }
 
-
-    override fun toogleCompletedTaskVisibility(displayCompleted: Boolean) {
+    override fun toggleCompletedTaskVisibility(displayCompleted: Boolean) {
         displayCompletedTasks = displayCompleted
         getTasks()
     }
 
+    override fun toggleTaskCompletedStatus(isChecked: Boolean, task: Task) {
+        task.isCompleted = isChecked
 
-    override fun toogleCompletedStatus(isChecked: Boolean, task: Task): Boolean {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateTask(task.body, task)
 
-        when {
-            isChecked && !displayCompletedTasks -> {
-                task.isCompleted = true
-                updateTask(task.body, task)
-                return true
-            }
-
-            isChecked && displayCompletedTasks -> {
-                task.isCompleted = true
-                updateTask(task.body, task)
-                return false
-            }
-
-            else -> {
-                task.isCompleted = false
-                updateTask(task.body, task)
-                return false
+            withContext(Dispatchers.Main) {
+                if (isChecked && !displayCompletedTasks) {
+                    updateUIState(taskToBeRemoved = task)
+                }
             }
         }
+    }
 
-
+    override fun removeEmptyTasks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            usecase.removeTasksWithNoText()
+        }
     }
 
     private fun updateUIState(
         tasks: List<Task> = _uiState.value.tasks,
-        newTaskId: Long = _uiState.value.newTaskId
+        newTask: Task = _uiState.value.newTask,
+        taskToBeRemoved: Task = _uiState.value.taskToBeRemoved
 
     ) {
         _uiState.value = UIState(
             tasks = tasks,
-            newTaskId = newTaskId
+            newTask = newTask,
+            taskToBeRemoved = taskToBeRemoved
         )
     }
 
