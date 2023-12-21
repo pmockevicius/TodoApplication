@@ -1,9 +1,7 @@
 package com.example.tasksapplication.di
 
 import com.example.tasksapplication.data.datasource.task.local.RoomDb.TaskLocalDatasourceImpl
-import com.example.tasksapplication.data.datasource.task.local.RoomDb.TaskLocalDatasourceInterface
-import com.example.tasksapplication.data.repository.task.TaskRepositoryImpl
-import com.example.tasksapplication.domain.repository.TaskRepositoryInterface
+import com.example.tasksapplication.data.datasource.task.local.TaskLocalDatasourceInterface
 import com.sidharth.mosam.data.local.TaskDataBase
 import dagger.Module
 import dagger.Provides

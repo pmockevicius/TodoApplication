@@ -1,6 +1,7 @@
 package com.example.tasksapplication.presentation.features
 
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -28,6 +29,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initView()
+
+        viewModel.uiState
     }
 
     private fun initView() {
@@ -85,6 +88,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private inner class TaskCallbacks : TaskCallbackInterface {
+        val handler = Handler()
+        val delayedOperationsMap = mutableMapOf<Task, Runnable>()
         override fun deleteTask(task: Task) {
             viewModel.deleteTask(task)
             taskAdapter.removeTask(task)
@@ -95,7 +100,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun toggleCompletedStatus(isChecked: Boolean, task: Task) {
-            viewModel.toggleTaskCompletedStatus(isChecked, task)
+            val existingRunnable = delayedOperationsMap.remove(task)
+            if (existingRunnable != null) {
+                handler.removeCallbacks(existingRunnable)
+            }
+            val newRunnable = Runnable {
+                viewModel.toggleTaskCompletedStatus(isChecked, task)
+            }
+            handler.postDelayed(newRunnable, 3000L)
+            delayedOperationsMap[task] = newRunnable
         }
     }
 }

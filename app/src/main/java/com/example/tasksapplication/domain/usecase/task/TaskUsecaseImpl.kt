@@ -4,13 +4,13 @@ import com.example.tasksapplication.domain.entity.Task
 import com.example.tasksapplication.domain.repository.TaskRepositoryInterface
 import javax.inject.Inject
 
-class TaskUsecaseImpl @Inject constructor (private val repository: TaskRepositoryInterface) : TaskUsecaseInterface {
+class TaskUsecaseImpl @Inject constructor (
+    private val repository: TaskRepositoryInterface) : TaskUsecaseInterface {
 
-    override suspend fun insertToDbAndGenerateTaskForUI(): Task {
-        val newTaskId = repository.insertTaskAndGetId(Task())
+    override suspend fun createAndGetTask(): Task {
+        val newTaskId = repository.createTaskAndGetId(Task())
         return Task(id = newTaskId, timeAdded = System.currentTimeMillis())
     }
-
 
     override suspend fun getTasks(): List<Task> {
         return repository.getTasks()

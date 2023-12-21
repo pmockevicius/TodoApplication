@@ -1,4 +1,6 @@
-package com.example.tasksapplication.data.datasource.task.local.RoomDb
+package com.example.tasksapplication.data.datasource.task.local
+
+import com.example.tasksapplication.data.datasource.task.local.RoomDb.TaskDbo
 
 interface TaskLocalDatasourceInterface {
 

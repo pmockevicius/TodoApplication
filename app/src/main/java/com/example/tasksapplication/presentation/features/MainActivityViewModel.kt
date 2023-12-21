@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -26,19 +26,20 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
     private var displayCompletedTasks: Boolean = false
 
     private val _uiState: MutableStateFlow<UIState> = MutableStateFlow(UIState())
-    override val uiState: StateFlow<UIState> = _uiState.asStateFlow()
-
+    override val uiState: StateFlow<UIState> = _uiState
 
     override fun getTasks() {
         viewModelScope.launch(Dispatchers.IO) {
             removeEmptyTasks()                                         //Where to implement this logic?
             val tasks = if (displayCompletedTasks) {
-                usecase.getTasks()
+                usecase.getTasks().sortedBy { task -> task.isCompleted}
             } else {
                 usecase.getTasks().filter { task -> !task.isCompleted }
             }
             withContext(Dispatchers.Main) {
-                updateUIState(tasks = tasks)
+//                updateUIState(tasks = tasks)
+
+                _uiState.update { it.copy(tasks = tasks) }
             }
         }
     }
@@ -58,8 +59,10 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
 
     override fun addNewTask() {
         viewModelScope.launch(Dispatchers.IO) {
-            val taskToBeAddedToUI = usecase.insertToDbAndGenerateTaskForUI()
-            updateUIState(newTask = taskToBeAddedToUI)
+            val taskToBeAddedToUI = usecase.createAndGetTask()
+
+            _uiState.update { it.copy(newTask = taskToBeAddedToUI) }
+
         }
     }
 
@@ -76,7 +79,8 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
 
             withContext(Dispatchers.Main) {
                 if (isChecked && !displayCompletedTasks) {
-                    updateUIState(taskToBeRemoved = task)
+                    _uiState.update { it.copy(taskToBeRemoved = task) }
+
                 }
             }
         }
@@ -88,17 +92,6 @@ class MainActivityViewModel @Inject constructor(private val usecase: TaskUsecase
         }
     }
 
-    private fun updateUIState(
-        tasks: List<Task> = _uiState.value.tasks,
-        newTask: Task = _uiState.value.newTask,
-        taskToBeRemoved: Task = _uiState.value.taskToBeRemoved
 
-    ) {
-        _uiState.value = UIState(
-            tasks = tasks,
-            newTask = newTask,
-            taskToBeRemoved = taskToBeRemoved
-        )
-    }
 
 }
